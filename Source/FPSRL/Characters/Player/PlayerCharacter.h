@@ -29,14 +29,7 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	void MoveForward(float value);
-	void MoveRight(float value);
-
-	void Turn(float value);
-	void LookUp(float value);
-
-private:
 
 	UPROPERTY(EditAnywhere)
-	UCameraComponent* m_camera;
+	TObjectPtr<UCameraComponent> m_camera;
 };
