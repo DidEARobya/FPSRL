@@ -11,14 +11,14 @@ void AFPSRLPlayerControllerBase::OnPossess(APawn* aPawn)
 {
 	Super::OnPossess(aPawn);
 
-	m_playerCharacter = Cast<APlayerCharacter>(aPawn);
-	checkf(m_playerCharacter, TEXT("PLAYER_CHARACTER is an invalid value"));
+	_playerCharacter = Cast<APlayerCharacter>(aPawn);
+	checkf(_playerCharacter, TEXT("PLAYER_CHARACTER is an invalid value"));
 
-	m_movementComponent = m_playerCharacter->GetCharacterMovement();
-	checkf(m_movementComponent, TEXT("MOVEMENT_COMPONENT is an invalid value"));
+	_movementComponent = _playerCharacter->GetCharacterMovement();
+	checkf(_movementComponent, TEXT("MOVEMENT_COMPONENT is an invalid value"));
 
-	m_enhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
-	checkf(m_enhancedInputComponent, TEXT("ENHANCED_INPUT_COMPONENT is an invalid value"));
+	_enhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
+	checkf(_enhancedInputComponent, TEXT("ENHANCED_INPUT_COMPONENT is an invalid value"));
 
 	UEnhancedInputLocalPlayerSubsystem* inputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer());
 	checkf(inputSubsystem, TEXT("INPUT_SUBSYSTEM is an invalid value"));
@@ -27,12 +27,12 @@ void AFPSRLPlayerControllerBase::OnPossess(APawn* aPawn)
 	inputSubsystem->ClearAllMappings();
 	inputSubsystem->AddMappingContext(inputMappingContext, 0);
 
-	BindActions(m_enhancedInputComponent);
+	BindActions(_enhancedInputComponent);
 }
 
 void AFPSRLPlayerControllerBase::OnUnPossess()
 {
-	m_enhancedInputComponent->ClearActionBindings();
+	_enhancedInputComponent->ClearActionBindings();
 
 	Super::OnUnPossess();
 }
@@ -49,14 +49,19 @@ void AFPSRLPlayerControllerBase::HandleMove(const struct FInputActionValue& valu
 {
 	const FVector movementVector = value.Get<FVector>();
 
-	m_playerCharacter->AddMovementInput(m_playerCharacter->GetActorForwardVector(), movementVector.Y);
-	m_playerCharacter->AddMovementInput(m_playerCharacter->GetActorRightVector(), movementVector.X);
+	_playerCharacter->AddMovementInput(_playerCharacter->GetActorForwardVector(), movementVector.Y);
+	_playerCharacter->AddMovementInput(_playerCharacter->GetActorRightVector(), movementVector.X);
 }
 
 void AFPSRLPlayerControllerBase::HandleJump()
 {
-	m_playerCharacter->UnCrouch();
-	m_playerCharacter->Jump();
+	_playerCharacter->UnCrouch();
+	_playerCharacter->Jump();
+}
+
+void AFPSRLPlayerControllerBase::HandleShoot()
+{
+	_playerCharacter->Shoot();
 }
 
 void AFPSRLPlayerControllerBase::BindActions(UEnhancedInputComponent* inputComponent)
@@ -86,6 +91,15 @@ void AFPSRLPlayerControllerBase::BindActions(UEnhancedInputComponent* inputCompo
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No Jump Action"));
+	}
+
+	if (actionShoot != nullptr)
+	{
+		inputComponent->BindAction(actionShoot, ETriggerEvent::Triggered, this, &AFPSRLPlayerControllerBase::HandleShoot);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Shoot Action"));
 	}
 }
 

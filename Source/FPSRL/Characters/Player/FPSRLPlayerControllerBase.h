@@ -19,6 +19,9 @@ class FPSRL_API AFPSRLPlayerControllerBase : public APlayerController
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Input | Mapping Context")
+	TObjectPtr<UInputMappingContext> inputMappingContext;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Input | Character Movement")
 	TObjectPtr<UInputAction> actionMove;
 
@@ -28,13 +31,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Input | Character Movement")
 	TObjectPtr<UInputAction> actionJump;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Input | Character Movement")
-	TObjectPtr<UInputMappingContext> inputMappingContext;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Input | Character Actions")
+	TObjectPtr<UInputAction> actionShoot;
 
 protected:
 	void HandleLook(const struct FInputActionValue& value);
 	void HandleMove(const struct FInputActionValue& value);
 	void HandleJump();
+	void HandleShoot();
 
 	virtual void OnPossess(APawn* aPawn) override;
 	virtual void OnUnPossess() override;
@@ -44,11 +48,11 @@ private:
 
 private:
 	UPROPERTY()
-	TObjectPtr<UEnhancedInputComponent> m_enhancedInputComponent;
+	TObjectPtr<UEnhancedInputComponent> _enhancedInputComponent;
 
 	UPROPERTY()
-	TObjectPtr<APlayerCharacter> m_playerCharacter;
+	TObjectPtr<APlayerCharacter> _playerCharacter;
 
 	UPROPERTY()
-	TObjectPtr<UCharacterMovementComponent> m_movementComponent;
+	TObjectPtr<UCharacterMovementComponent> _movementComponent;
 };

@@ -7,6 +7,7 @@
 #include "PlayerCharacter.generated.h"
 
 class UCameraComponent;
+class UGunArm;
 
 UCLASS()
 
@@ -17,6 +18,8 @@ class FPSRL_API APlayerCharacter : public ACharacter
 public:
 	// Sets default values for this character's properties
 	APlayerCharacter();
+
+	void Shoot();
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -31,5 +34,8 @@ protected:
 private:
 
 	UPROPERTY(EditAnywhere)
-	TObjectPtr<UCameraComponent> m_camera;
+	TObjectPtr<UCameraComponent> _camera;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UGunArm> _gunArm;
 };
