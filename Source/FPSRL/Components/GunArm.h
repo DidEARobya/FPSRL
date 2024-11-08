@@ -6,6 +6,11 @@
 #include "Components/SceneComponent.h"
 #include "GunArm.generated.h"
 
+class AGunUpgradeModule;
+class UGunStats;
+class UPlayerHUD;
+
+DECLARE_DELEGATE_OneParam(FOnChargeUpdated, float);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FPSRL_API UGunArm : public USceneComponent
 {
@@ -15,6 +20,9 @@ public:
 	// Sets default values for this component's properties
 	UGunArm();
 	void Fire(FVector target);
+	void ApplyUpgrade(AGunUpgradeModule* upgrade);
+
+	void BindOnChargeUpdated(UPlayerHUD* playerHUD);
 
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -23,21 +31,23 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
+	void UpdateStats();
+
+public:
+	const float Gun_MaxCharge = 100;
+private:
+	FOnChargeUpdated onChargeUpdated;
+
 	UPROPERTY(EditAnywhere)
+	UGunStats* _gunStats;
+
 	float _fireRate;
-	float _shotTimer;
-
-	UPROPERTY(EditAnywhere)
 	float _shotChargeCost;
-
-	UPROPERTY(EditAnywhere)
-	float _maxCharge;
-	float _currentCharge;
-	UPROPERTY(EditAnywhere)
 	float _rechargeRate;
+	float _rechargeDelay;
 
-	UPROPERTY(EditAnywhere)
-	float _timeToStartRecharge;
+	float _shotTimer;
+	float _currentCharge;
 	float _cooldownTime;
 
 	bool _forceRecharge;

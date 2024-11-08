@@ -34,11 +34,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Input | Character Actions")
 	TObjectPtr<UInputAction> actionShoot;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Input | Character Actions")
+	TObjectPtr<UInputAction> actionInteract;
+
 protected:
 	void HandleLook(const struct FInputActionValue& value);
 	void HandleMove(const struct FInputActionValue& value);
 	void HandleJump();
 	void HandleShoot();
+	void HandleInteract();
 
 	virtual void OnPossess(APawn* aPawn) override;
 	virtual void OnUnPossess() override;

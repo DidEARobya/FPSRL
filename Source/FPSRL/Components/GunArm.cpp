@@ -4,6 +4,9 @@
 #include "FPSRL/Components/GunArm.h"
 #include "GunArm.h"
 #include "DrawDebugHelpers.h"
+#include "FPSRL/Upgrades/GunUpgradeModule.h"
+#include "FPSRL/Data/GunStats.h"
+#include "FPSRL/UI/PlayerHUD.h"
 
 // Sets default values for this component's properties
 UGunArm::UGunArm()
@@ -12,8 +15,12 @@ UGunArm::UGunArm()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	_gunStats = CreateDefaultSubobject<UGunStats>(TEXT("Default Gun Stats"));
+	checkf(_gunStats, TEXT("Gun Stats missing"));
+
 	_cooldownTime = 0;
 	_forceRecharge = false;
+	_currentCharge = Gun_MaxCharge;
 	// ...
 }
 
@@ -45,6 +52,7 @@ void UGunArm::Fire(FVector target)
 
 	_currentCharge -= _shotChargeCost;
 	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::Printf(TEXT("Current Charge: %f"), _currentCharge));
+	onChargeUpdated.Execute(_currentCharge);
 
 	if (_currentCharge <= 0)
 	{
@@ -55,13 +63,33 @@ void UGunArm::Fire(FVector target)
 	_shotTimer = 0;
 }
 
+void UGunArm::ApplyUpgrade(AGunUpgradeModule* upgrade)
+{
+	_gunStats->UpdateStats(upgrade->GetModuleStats());
+	UpdateStats();
+}
+
+void UGunArm::BindOnChargeUpdated(UPlayerHUD* playerHUD)
+{
+	onChargeUpdated.BindUObject(playerHUD, &UPlayerHUD::SetGunCharge);
+}
+
 // Called when the game starts
 void UGunArm::BeginPlay()
 {
 	Super::BeginPlay();
 
-	_currentCharge = _maxCharge;
+	UpdateStats();
+
 	_shotTimer = 1 / _fireRate;
+}
+
+void UGunArm::UpdateStats()
+{
+	_fireRate = _gunStats->GetFireRate();
+	_shotChargeCost = _gunStats->GetShotChargeCost();
+	_rechargeRate = _gunStats->GetRechargeRate();
+	_rechargeDelay = _gunStats->GetRechargeDelay();
 }
 
 // Called every frame
@@ -72,11 +100,12 @@ void UGunArm::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponen
 	_shotTimer += DeltaTime;
 	_cooldownTime += DeltaTime;
 
-	if (_cooldownTime >= _timeToStartRecharge)
+	if (_cooldownTime >= _rechargeDelay)
 	{
-		_currentCharge = FMath::Clamp(_currentCharge + _rechargeRate * DeltaTime, 0.0f, _maxCharge);
+		_currentCharge = FMath::Clamp(_currentCharge + _rechargeRate * DeltaTime, 0.0f, Gun_MaxCharge);
+		onChargeUpdated.Execute(_currentCharge);
 
-		if (_currentCharge >= _maxCharge)
+		if (_currentCharge >= Gun_MaxCharge)
 		{
 			_forceRecharge = false;
 		}

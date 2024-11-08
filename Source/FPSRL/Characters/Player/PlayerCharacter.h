@@ -8,6 +8,8 @@
 
 class UCameraComponent;
 class UGunArm;
+class AGunUpgradeModule;
+class UPlayerHUD;
 
 UCLASS()
 
@@ -20,6 +22,9 @@ public:
 	APlayerCharacter();
 
 	void Shoot();
+	void Interact();
+	void ApplyGunUpgrade(AGunUpgradeModule* upgrade);
+	void UpdateChargeBar(float charge);
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -30,12 +35,16 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UCameraComponent> _camera;
-
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UGunArm> _gunArm;
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UPlayerHUD> _playerHUDDefault;
+
+	UPlayerHUD* _playerHUD;
 };

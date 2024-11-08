@@ -63,7 +63,10 @@ void AFPSRLPlayerControllerBase::HandleShoot()
 {
 	_playerCharacter->Shoot();
 }
-
+void AFPSRLPlayerControllerBase::HandleInteract()
+{
+	_playerCharacter->Interact();
+}
 void AFPSRLPlayerControllerBase::BindActions(UEnhancedInputComponent* inputComponent)
 {
 	if (actionMove != nullptr)
@@ -100,6 +103,15 @@ void AFPSRLPlayerControllerBase::BindActions(UEnhancedInputComponent* inputCompo
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No Shoot Action"));
+	}
+
+	if (actionInteract != nullptr)
+	{
+		inputComponent->BindAction(actionInteract, ETriggerEvent::Triggered, this, &AFPSRLPlayerControllerBase::HandleInteract);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Interact Action"));
 	}
 }
 
