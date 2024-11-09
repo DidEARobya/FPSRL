@@ -7,6 +7,7 @@
 #include "FPSRL/Components/GunArm.h"
 #include "FPSRL/Upgrades/GunUpgradeModule.h"
 #include "FPSRL/UI/PlayerHUD.h"
+#include "FPSRL/Components/HealthComponent.h"
 #include "Blueprint/UserWidget.h"
 
 // Sets default values
@@ -15,11 +16,18 @@ APlayerCharacter::APlayerCharacter()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	_healthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+	checkf(_healthComponent, TEXT("Player Health component is in an invalid value"));
+
 	_camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Player Camera"));
 	checkf(_camera, TEXT("PLAYER_CAMERA is an invalid value"));
 
     _camera->SetupAttachment(RootComponent);
 	_camera->bUsePawnControlRotation = true;
+}
+void APlayerCharacter::Die()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::Printf(TEXT("Player is Dead")));
 }
 void APlayerCharacter::Shoot()
 {
@@ -55,9 +63,13 @@ void APlayerCharacter::ApplyGunUpgrade(AGunUpgradeModule* upgrade)
 {
 	_gunArm->ApplyUpgrade(upgrade);
 }
-void APlayerCharacter::UpdateChargeBar(float charge)
+void APlayerCharacter::UpdateHealthBar(int health, int maxHealth)
 {
-	_playerHUD->SetGunCharge(charge);
+	_playerHUD->SetHealth(health, maxHealth);
+}
+void APlayerCharacter::UpdateChargeBar(float charge, float maxCharge)
+{
+	_playerHUD->SetGunCharge(charge, maxCharge);
 }
 // Called when the game starts or when spawned
 void APlayerCharacter::BeginPlay()
@@ -78,7 +90,8 @@ void APlayerCharacter::BeginPlay()
 	checkf(_gunArm, TEXT("Gun arm not found"));
 	_gunArm->BindOnChargeUpdated(_playerHUD);
 
-	_playerHUD->SetGunMaxCharge(_gunArm->Gun_MaxCharge);
+	_healthComponent->Init(_baseMaxHealth);
+	_healthComponent->BindOnHealthUpdated(_playerHUD);
 }
 
 void APlayerCharacter::EndPlay(const EEndPlayReason::Type EndPlayReason)

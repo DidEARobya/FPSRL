@@ -7,6 +7,7 @@
 #include "FPSRL/Upgrades/GunUpgradeModule.h"
 #include "FPSRL/Data/GunStats.h"
 #include "FPSRL/UI/PlayerHUD.h"
+#include "FPSRL/Characters/Enemies/Enemy_Base.h"
 
 // Sets default values for this component's properties
 UGunArm::UGunArm()
@@ -31,28 +32,32 @@ void UGunArm::Fire(FVector target)
 		return;
 	}
 
-	FHitResult outHit;
+
 	FVector start = GetComponentLocation();
-
 	FVector end = ((target * 1000.0f) + start);
-
-	FCollisionQueryParams collisionParams;
 
 	DrawDebugLine(GetWorld(), start, end, FColor::Green, true);
 
-	//bool isHit = GetWorld()->LineTraceSingleByChannel(outHit, start, end, ECC_Visibility, collisionParams);
+	FHitResult hit;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(GetOwner());
 
-	//if (isHit == true)
-	//{
-	//	if (outHit.bBlockingHit == true)
-	//	{
-	//		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::Printf(TEXT("Hit: %s"), *outHit.GetActor()->GetName()));
-	//	}
-	//}
+	if (GetWorld()->LineTraceSingleByChannel(hit, start, end, ECollisionChannel::ECC_GameTraceChannel2, params))
+	{
+		if (hit.GetActor() == nullptr)
+		{
+			return;
+		}
+
+		if (AEnemy_Base* enemy = Cast<AEnemy_Base>(hit.GetActor()))
+		{
+			enemy->AdjustHealth(-10);
+		}
+	}
 
 	_currentCharge -= _shotChargeCost;
-	GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::Printf(TEXT("Current Charge: %f"), _currentCharge));
-	onChargeUpdated.Execute(_currentCharge);
+	//GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::Printf(TEXT("Current Charge: %f"), _currentCharge));
+	onChargeUpdated.Execute(_currentCharge, Gun_MaxCharge);
 
 	if (_currentCharge <= 0)
 	{
@@ -103,7 +108,7 @@ void UGunArm::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponen
 	if (_cooldownTime >= _rechargeDelay)
 	{
 		_currentCharge = FMath::Clamp(_currentCharge + _rechargeRate * DeltaTime, 0.0f, Gun_MaxCharge);
-		onChargeUpdated.Execute(_currentCharge);
+		onChargeUpdated.Execute(_currentCharge, Gun_MaxCharge);
 
 		if (_currentCharge >= Gun_MaxCharge)
 		{

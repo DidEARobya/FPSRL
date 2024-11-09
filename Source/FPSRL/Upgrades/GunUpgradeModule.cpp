@@ -18,8 +18,7 @@ AGunUpgradeModule::AGunUpgradeModule()
 	_staticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Static Mesh"));
 	checkf(_staticMesh, TEXT("No Static Mesh on Upgrade Module"));
 	_staticMesh->SetCollisionProfileName(FName("Interactable"));
-
-	SetRootComponent(_staticMesh);
+	_staticMesh->SetupAttachment(RootComponent);
 }
 
 UGunStats* AGunUpgradeModule::GetModuleStats()

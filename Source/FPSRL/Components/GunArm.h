@@ -10,7 +10,7 @@ class AGunUpgradeModule;
 class UGunStats;
 class UPlayerHUD;
 
-DECLARE_DELEGATE_OneParam(FOnChargeUpdated, float);
+DECLARE_DELEGATE_TwoParams(FOnChargeUpdated, float, float);
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FPSRL_API UGunArm : public USceneComponent
 {

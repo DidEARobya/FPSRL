@@ -37,12 +37,20 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Input | Character Actions")
 	TObjectPtr<UInputAction> actionInteract;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Input | Character Actions")
+	TObjectPtr<UInputAction> actionTakeDamage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player Input | Character Actions")
+	TObjectPtr<UInputAction> actionHeal;
+
 protected:
 	void HandleLook(const struct FInputActionValue& value);
 	void HandleMove(const struct FInputActionValue& value);
 	void HandleJump();
 	void HandleShoot();
 	void HandleInteract();
+	void HandleTakeDamage();
+	void HandleHeal();
 
 	virtual void OnPossess(APawn* aPawn) override;
 	virtual void OnUnPossess() override;

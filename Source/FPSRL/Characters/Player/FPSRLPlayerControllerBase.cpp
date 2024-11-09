@@ -67,6 +67,14 @@ void AFPSRLPlayerControllerBase::HandleInteract()
 {
 	_playerCharacter->Interact();
 }
+void AFPSRLPlayerControllerBase::HandleTakeDamage()
+{
+	_playerCharacter->AdjustHealth(-10);
+}
+void AFPSRLPlayerControllerBase::HandleHeal()
+{
+	_playerCharacter->AdjustHealth(10);
+}
 void AFPSRLPlayerControllerBase::BindActions(UEnhancedInputComponent* inputComponent)
 {
 	if (actionMove != nullptr)
@@ -112,6 +120,24 @@ void AFPSRLPlayerControllerBase::BindActions(UEnhancedInputComponent* inputCompo
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No Interact Action"));
+	}
+
+	if (actionTakeDamage != nullptr)
+	{
+		inputComponent->BindAction(actionTakeDamage, ETriggerEvent::Triggered, this, &AFPSRLPlayerControllerBase::HandleTakeDamage);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Take Damage Action"));
+	}
+
+	if (actionHeal != nullptr)
+	{
+		inputComponent->BindAction(actionHeal, ETriggerEvent::Triggered, this, &AFPSRLPlayerControllerBase::HandleHeal);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Heal Action"));
 	}
 }
 
