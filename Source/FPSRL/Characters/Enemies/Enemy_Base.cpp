@@ -2,6 +2,7 @@
 
 
 #include "FPSRL/Characters/Enemies/Enemy_Base.h"
+#include "FPSRL/Characters/AI/GOAP_Action.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "FPSRL/Components/HealthComponent.h"
