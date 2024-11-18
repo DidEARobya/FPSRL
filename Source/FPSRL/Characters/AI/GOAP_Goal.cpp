@@ -13,3 +13,21 @@ GOAP_Goal::GOAP_Goal(FString name)
 GOAP_Goal::~GOAP_Goal()
 {
 }
+
+bool GOAP_Goal::CheckIfFulfilled()
+{
+	if (_desiredEffects.Num() == 0)
+	{
+		return true;
+	}
+
+	for (GOAP_Belief* belief : _desiredEffects)
+	{
+		if (belief->Evaluate() == false)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}

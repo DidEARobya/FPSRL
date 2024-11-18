@@ -11,6 +11,8 @@ public:
 	GOAP_Goal(FString name);
 	~GOAP_Goal();
 
+	bool CheckIfFulfilled();
+
 	class FPSRL_API Builder
 	{
 		GOAP_Goal* goal;
@@ -36,7 +38,7 @@ public:
 		}
 	};
 
-private:
+public:
 	FString _name;
 	int _priority;
 

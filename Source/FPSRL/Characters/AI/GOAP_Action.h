@@ -35,10 +35,12 @@ public:
 		Builder AddPrecondition(GOAP_Belief* precondition)
 		{
 			action->_preconditions.Add(precondition);
+			return *this;
 		}
 		Builder AddEffect(GOAP_Belief* effect)
 		{
 			action->_effects.Add(effect);
+			return *this;
 		}
 		GOAP_Action* Build()
 		{
