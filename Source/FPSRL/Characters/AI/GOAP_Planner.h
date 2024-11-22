@@ -6,12 +6,16 @@
 
 class GOAP_Action;
 class GOAP_Goal;
+class GOAP_Plan;
+class UGOAP_Agent;
+class GOAP_Node;
 
 class FPSRL_API GOAP_Planner
 {
 public:
-	GOAP_Planner(/*agent,*/ TArray<GOAP_Goal> goals, GOAP_Goal lastGoal);
+	GOAP_Planner();
 	~GOAP_Planner();
 
-	bool FindPath(/*Node,*/ TArray<GOAP_Action> actions);
+	GOAP_Plan* Plan(UGOAP_Agent* agent,TArray<GOAP_Goal*>* goals, GOAP_Goal* lastGoal);
+	bool FindPath(GOAP_Node* parent,TArray<GOAP_Action*> actions);
 };

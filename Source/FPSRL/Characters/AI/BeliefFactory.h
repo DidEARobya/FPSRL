@@ -9,12 +9,12 @@ class GOAP_Belief;
 class FPSRL_API BeliefFactory
 {
 public:
-	BeliefFactory(/*Agent, */TMap<FString, GOAP_Belief*> beliefs);
+	BeliefFactory(/*Agent, */TMap<FString, GOAP_Belief*> *beliefs);
 	~BeliefFactory();
 
 	void AddBelief(FString name, TFunction<bool()> condition);
 	void AddLocationBelief(FString name, FVector location);
 private:
 	//Agent
-	TMap<FString, GOAP_Belief*> _beliefs;
+	TMap<FString, GOAP_Belief*>* _beliefs;
 };

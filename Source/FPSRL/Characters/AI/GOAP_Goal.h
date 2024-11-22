@@ -22,15 +22,15 @@ public:
 		{
 			goal = new GOAP_Goal(name);
 		}
-		Builder* WithPriority(int priority)
+		Builder WithPriority(int priority)
 		{
 			goal->_priority = priority;
-			return this;
+			return *this;
 		}
-		Builder* AddDesiredEffect(GOAP_Belief* effect)
+		Builder AddDesiredEffect(GOAP_Belief* effect)
 		{
 			goal->_desiredEffects.Add(effect);
-			return this;
+			return *this;
 		}
 		GOAP_Goal* Build()
 		{

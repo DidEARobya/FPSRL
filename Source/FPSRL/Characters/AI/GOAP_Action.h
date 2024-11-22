@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FPSRL/Interfaces/ActionStrategy.h"
 
 class GOAP_Belief;
+class Strategy_Base;
 
 class FPSRL_API GOAP_Action
 {
@@ -15,6 +17,8 @@ public:
 	void Start(); //Start Strategy
 	void Update(float deltaTime); //Evaluate Strategy and Beliefs
 	void Stop(); //Stop Strategy
+
+	bool IsComplete();
 
 	class FPSRL_API Builder
 	{
@@ -30,6 +34,11 @@ public:
 		Builder WithCost(int cost)
 		{
 			action->_cost = cost;
+			return *this;
+		}
+		Builder WithStrategy(IActionStrategy* strategy)
+		{
+			action->_strategy = strategy;
 			return *this;
 		}
 		Builder AddPrecondition(GOAP_Belief* precondition)
@@ -48,7 +57,10 @@ public:
 		}
 	};
 
-private:
+public:
+
+	IActionStrategy* _strategy;
+
 	TArray<GOAP_Belief*> _preconditions;
 	TArray<GOAP_Belief*> _effects;
 

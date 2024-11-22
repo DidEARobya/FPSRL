@@ -8,7 +8,6 @@
 #include "FPSRL/Components/HealthComponent.h"
 #include "FPSRL/Characters/Player/PlayerCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Kismet/GameplayStatics.h"
 #include "AIController.h"
 #include "Navigation/PathFollowingComponent.h"
 
@@ -37,6 +36,16 @@ void AEnemy_Base::Die()
 	Destroy();
 }
 
+void AEnemy_Base::SetTarget(AActor* target)
+{
+	_target = target;
+
+	if (_target == nullptr)
+	{
+		_controller->StopMovement();
+	}
+}
+
 // Called when the game starts or when spawned
 void AEnemy_Base::BeginPlay()
 {
@@ -44,7 +53,7 @@ void AEnemy_Base::BeginPlay()
 
 	_healthComponent->Init(_baseMaxHealth);
 	_controller = Cast<AAIController>(GetController());
-	_player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
+	//_player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 	_movementComponent = Cast<UCharacterMovementComponent>(GetMovementComponent());
 	_movementComponent->MaxWalkSpeed = _baseSpeed;
 }
@@ -54,11 +63,11 @@ void AEnemy_Base::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (_controller != nullptr && _player != nullptr)
+	if (_controller != nullptr && _target != nullptr)
 	{
 		FAIMoveRequest moveTo;
 		moveTo.SetAcceptanceRadius(10);
-		moveTo.SetGoalActor(_player);
+		moveTo.SetGoalActor(_target);
 
 		_controller->MoveTo(moveTo);
 	}

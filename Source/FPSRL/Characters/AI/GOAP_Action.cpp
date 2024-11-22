@@ -16,12 +16,20 @@ GOAP_Action::~GOAP_Action()
 
 void GOAP_Action::Start()
 {
+	_strategy->Start();
 }
 
 void GOAP_Action::Update(float deltaTime)
 {
+	_strategy->Update(deltaTime);
 }
 
 void GOAP_Action::Stop()
 {
+	_strategy->Stop();
+}
+
+bool GOAP_Action::IsComplete()
+{
+	return _strategy->Complete();
 }

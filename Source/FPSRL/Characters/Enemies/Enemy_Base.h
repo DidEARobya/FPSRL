@@ -23,7 +23,7 @@ public:
 	// Sets default values for this pawn's properties
 	AEnemy_Base();
 	virtual void Die() override;
-
+	void SetTarget(AActor* target);
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 protected:
@@ -39,6 +39,7 @@ protected:
 	UCapsuleComponent* _collisionMesh;
 
 	UCharacterMovementComponent* _movementComponent;
+	AActor* _target;
 	APlayerCharacter* _player;
 private:
 	UPROPERTY(EditAnywhere)
