@@ -18,21 +18,20 @@ AttackStrategy::~AttackStrategy()
 
 void AttackStrategy::Start()
 {
+	_agent->_isAttacking = true;
+	_agent->_isInTargetRange = true;
 }
 
 void AttackStrategy::Update(float deltaTime)
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::Printf(TEXT("Attacking")));
 }
 
 void AttackStrategy::Stop()
 {
-	_agent->isInTargetRange = false;
+	_agent->_isAttacking = false;
 }
 
 bool AttackStrategy::Complete()
 {
-	FVector distance = _agent->_owner->GetActorLocation() - _agent->_target->GetActorLocation();
-
-	return (distance.Length() > 200);
+	return !_agent->_isInTargetRange;
 }

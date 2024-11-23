@@ -10,7 +10,13 @@
 #include "FPSRL/Characters/Enemies/Enemy_Base.h"
 #include "FPSRL/Characters/AI/Strategies/ChaseStrategy.h"
 #include "FPSRL/Characters/AI/Strategies/AttackStrategy.h"
+#include "FPSRL/Characters/AI/Strategies/PatrolStrategy.h"
+#include "FPSRL/Characters/AI/Sensors/GOAP_TargetSensor.h"
+#include "FPSRL/Characters/AI/Sensors/GOAP_SightSensor.h"
+#include "FPSRL/Characters/Player/PlayerCharacter.h"
+#include "Components/SphereComponent.h"
 #include "DrawDebugHelpers.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 UGOAP_Agent::UGOAP_Agent()
@@ -19,7 +25,22 @@ UGOAP_Agent::UGOAP_Agent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	_isInTargetRange = false;
+	_hasLineOfSight = false;
+
+	_playerSensor = CreateDefaultSubobject<UGOAP_TargetSensor>(TEXT("Player Sensor"));
+	checkf(_playerSensor, TEXT("Failed to Create Target Sensor"));
+
+	_sightSensor = CreateDefaultSubobject<UGOAP_SightSensor>(TEXT("Sight Sensor"));
+	checkf(_sightSensor, TEXT("Failted to Create Sight Sensor"));
+}
+
+void UGOAP_Agent::Init()
+{
+	_owner = Cast<AEnemy_Base>(GetOwner());
+	checkf(_owner, TEXT("GOAP_Agent Owner Not Found"));
+
+	_playerSensor->_sensor->SetupAttachment(_owner->GetRootComponent());
 }
 
 void UGOAP_Agent::SetupBeliefs()
@@ -28,35 +49,39 @@ void UGOAP_Agent::SetupBeliefs()
 
 	BeliefFactory factory = BeliefFactory(_beliefs);
 
-	factory.AddBelief(TEXT("Seek"), [] { return false; });
-	factory.AddBelief(TEXT("Attack"), [&] { return !isInTargetRange; });
+	factory.AddBelief(TEXT("PATROL"), [&] { return _hasLineOfSight; });
+	factory.AddBelief(TEXT("SEEK"), [&] { return !_hasLineOfSight; });
+	factory.AddBelief(TEXT("ATTACK"), [&] { return !_isInTargetRange; });
 }
 
 void UGOAP_Agent::SetupActions()
 {
 	_actions = new TArray<GOAP_Action*>();
 
-	_actions->Add(GOAP_Action::Builder(TEXT("Seek")).WithStrategy(new ChaseStrategy(this)).AddEffect(_beliefs->FindChecked(TEXT("Seek"))).Build());
-	_actions->Add(GOAP_Action::Builder(TEXT("Attack")).WithStrategy(new AttackStrategy(this)).AddEffect(_beliefs->FindChecked(TEXT("Attack"))).Build());
+	_actions->Add(GOAP_Action::Builder(TEXT("PATROL")).WithStrategy(new PatrolStrategy(this)).AddEffect(_beliefs->FindChecked(TEXT("PATROL"))).Build());
+	_actions->Add(GOAP_Action::Builder(TEXT("SEEK")).WithStrategy(new ChaseStrategy(this)).AddEffect(_beliefs->FindChecked(TEXT("SEEK"))).Build());
+	_actions->Add(GOAP_Action::Builder(TEXT("ATTACK")).WithStrategy(new AttackStrategy(this)).AddEffect(_beliefs->FindChecked(TEXT("ATTACK"))).Build());
 }
 
 void UGOAP_Agent::SetupGoals()
 {
 	_goals = new TArray<GOAP_Goal*>();
 
-	_goals->Add(GOAP_Goal::Builder(TEXT("Seek")).WithPriority(1).AddDesiredEffect(_beliefs->FindChecked(TEXT("Seek"))).Build());
-	_goals->Add(GOAP_Goal::Builder(TEXT("Attack")).WithPriority(5).AddDesiredEffect(_beliefs->FindChecked(TEXT("Attack"))).Build());
+	_goals->Add(GOAP_Goal::Builder(TEXT("PATROL")).WithPriority(1).AddDesiredEffect(_beliefs->FindChecked(TEXT("PATROL"))).Build());
+	_goals->Add(GOAP_Goal::Builder(TEXT("SEEK")).WithPriority(3).AddDesiredEffect(_beliefs->FindChecked(TEXT("SEEK"))).Build());
+	_goals->Add(GOAP_Goal::Builder(TEXT("ATTACK")).WithPriority(5).AddDesiredEffect(_beliefs->FindChecked(TEXT("ATTACK"))).Build());
 }
-void UGOAP_Agent::SetOwnerTarget(AActor* target)
+void UGOAP_Agent::SetDestination(FVector destination)
 {
-	if (target == nullptr)
-	{
-		_owner->SetTarget(target);
-		return;
-	}
-
-	_owner->SetTarget(target);
-	_target = target;
+	_owner->SetDestination(destination);
+}
+FVector UGOAP_Agent::GetActorLocation()
+{
+	return _owner->GetActorLocation();
+}
+FVector UGOAP_Agent::GetForwardVector()
+{
+	return _owner->GetActorForwardVector();
 }
 void UGOAP_Agent::CalculateActionPlan()
 {
@@ -81,21 +106,28 @@ void UGOAP_Agent::CalculateActionPlan()
 	}
 }
 
+bool UGOAP_Agent::HasPath()
+{
+	return _owner->HasPath();
+}
+
  
 // Called when the game starts
 void UGOAP_Agent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	_owner = Cast<AEnemy_Base>(GetOwner());
-	checkf(_owner, TEXT("GOAP_Agent Owner Not Found"));
+	_playerSensor->Init(attackRange, this);
+	_sightSensor->Init(this);
 
 	SetupBeliefs();
 	SetupActions();
 	SetupGoals();
 	
-	
 	_planner = new GOAP_Planner();
+	_player = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(_owner->GetWorld(), 0));
+
+	_playerSensor->SetTarget(_player);
+	_sightSensor->SetTarget(_player);
 }
 
 
@@ -103,6 +135,11 @@ void UGOAP_Agent::BeginPlay()
 void UGOAP_Agent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	GEngine->AddOnScreenDebugMessage(0, 1, FColor::Red, FString::Printf(TEXT("Current Action: %s"), _currentAction ? *_currentAction->_name : TEXT("NONE")));
+	GEngine->AddOnScreenDebugMessage(1, 1, FColor::Red, FString::Printf(TEXT("TargetInRange: %s "), _isInTargetRange ? TEXT("TRUE") : TEXT("FALSE")));
+	GEngine->AddOnScreenDebugMessage(2, 1, FColor::Red, FString::Printf(TEXT("LineOfSight: %s"), _hasLineOfSight ? TEXT("TRUE") : TEXT("FALSE")));
+	GEngine->AddOnScreenDebugMessage(3, 1, FColor::Red, FString::Printf(TEXT("IsAttacking: %s"), _isAttacking ? TEXT("TRUE") : TEXT("FALSE")));
 
 	if (_currentAction == nullptr)
 	{
@@ -113,7 +150,7 @@ void UGOAP_Agent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComp
 			_currentGoal = _plan->goal;
 			_currentAction = _plan->actions->Pop();
 
-			GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::Printf(TEXT("%s has started"), *_currentAction->_name));
+
 			_currentAction->Start();
 		}
 	}

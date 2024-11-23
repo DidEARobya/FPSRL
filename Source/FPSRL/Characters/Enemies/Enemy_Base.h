@@ -11,8 +11,8 @@ class AAIController;
 class UStaticMeshComponent;
 class UHealthComponent;
 class UCharacterMovementComponent;
-class APlayerCharacter;
 class UCapsuleComponent;
+class UGOAP_Agent;
 
 UCLASS()
 class FPSRL_API AEnemy_Base : public ACharacter, public IHealth
@@ -22,8 +22,11 @@ class FPSRL_API AEnemy_Base : public ACharacter, public IHealth
 public:
 	// Sets default values for this pawn's properties
 	AEnemy_Base();
+
 	virtual void Die() override;
-	void SetTarget(AActor* target);
+	void SetDestination(FVector destination);
+	bool HasPath();
+
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 protected:
@@ -31,16 +34,15 @@ protected:
 	virtual void BeginPlay() override;
 
 protected:
-
 	UPROPERTY(EditAnywhere)
-	AAIController* _controller;
+	TObjectPtr<UGOAP_Agent> _agent;
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* _staticMesh;
-	UCapsuleComponent* _collisionMesh;
+	TObjectPtr<AAIController> _controller;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UStaticMeshComponent> _staticMesh;
+	TObjectPtr<UCapsuleComponent> _collisionMesh;
 
-	UCharacterMovementComponent* _movementComponent;
-	AActor* _target;
-	APlayerCharacter* _player;
+	TObjectPtr<UCharacterMovementComponent> _movementComponent;
 private:
 	UPROPERTY(EditAnywhere)
 	int _baseMaxHealth;

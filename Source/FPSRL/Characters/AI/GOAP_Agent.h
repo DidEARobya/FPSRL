@@ -12,6 +12,9 @@ class GOAP_Planner;
 class GOAP_Action;
 class GOAP_Plan;
 class AEnemy_Base;
+class UGOAP_TargetSensor;
+class UGOAP_SightSensor;
+class APlayerCharacter;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FPSRL_API UGOAP_Agent : public UActorComponent
@@ -21,13 +24,19 @@ class FPSRL_API UGOAP_Agent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UGOAP_Agent();
+	void Init();
+
 	void SetupBeliefs();
 	void SetupGoals();
 	void SetupActions();
 	
-	void SetOwnerTarget(AActor* target);
+	void SetDestination(FVector destination);
+	FVector GetActorLocation();
+	FVector GetForwardVector();
+
 	void CalculateActionPlan();
 
+	bool HasPath();
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 protected:
@@ -35,8 +44,20 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	AActor* _target;
-	AEnemy_Base* _owner;
+	UPROPERTY(EditAnywhere)
+	float patrolDelay;
+	UPROPERTY(EditAnywhere)
+	float patrolRadius;
+	UPROPERTY(EditAnywhere)
+	float attackRange;
+
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UGOAP_TargetSensor> _playerSensor;
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UGOAP_SightSensor> _sightSensor;
+
+	TObjectPtr<APlayerCharacter> _player;
+	TObjectPtr<AEnemy_Base> _owner;
 	
 	TMap<FString, GOAP_Belief*>* _beliefs;
 
@@ -51,5 +72,7 @@ public:
 
 	GOAP_Planner* _planner;
 
-	bool isInTargetRange;
+	bool _isInTargetRange;
+	bool _hasLineOfSight;
+	bool _isAttacking;
 };

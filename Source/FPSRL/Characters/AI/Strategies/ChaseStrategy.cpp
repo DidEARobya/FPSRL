@@ -18,23 +18,19 @@ ChaseStrategy::~ChaseStrategy()
 
 void ChaseStrategy::Start()
 {
-	_agent->SetOwnerTarget(Cast<APlayerCharacter>(UGameplayStatics::GetPlayerPawn(_agent->_owner->GetWorld(), 0)));
 }
 
 void ChaseStrategy::Update(float deltaTime)
 {
+	_agent->SetDestination(_agent->_player->GetActorLocation());
 }
 
 void ChaseStrategy::Stop()
 {
-	_agent->SetOwnerTarget(nullptr);
-	_agent->isInTargetRange = true;
+	_agent->_owner->GetController()->StopMovement();
 }
 
 bool ChaseStrategy::Complete()
 {
-	FVector distance = _agent->_owner->GetActorLocation() - _agent->_target->GetActorLocation();
-	//GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Red, FString::Printf(TEXT("Distance: %f"), distance.Length()));
-
-	return (distance.Length() < 200);
+	return (_agent->_isInTargetRange == true || _agent->_hasLineOfSight == false);
 }
